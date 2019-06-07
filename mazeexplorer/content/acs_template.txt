@@ -1,0 +1,168 @@
+#include "zcommon.acs"
+
+#define TARGET_ID_START 1000
+#define GOAL_TID 999
+
+int TARGET_ID_END = TARGET_ID_START;
+
+int target_id = 10;
+
+global int 0:reward;
+global int 1:goal_x;
+global int 2:goal_y;
+global int 3:goal_z;
+global int 4:map_level;
+global int 5:reward_check;
+
+int number_keys = $number_keys;
+bool random_spawn = $random_spawn;
+bool random_textures = $random_textures;
+bool random_keys = $random_key_positions;
+int xmin = $xmin;
+int ymin = $ymin;
+int xmax = $xmax;
+int ymax = $ymax;
+int offset = 48.0;
+
+str floor_texture = "$floor_texture";
+str ceilling_texture = "$ceilling_texture";
+str wall_texture = "$wall_texture";
+
+int SPAWN_LOC_ID = 0;
+
+int keys_spawn[ $number_keys_maps ] = { $keys_spawn };
+
+int keys_spawn_offset_x[ $number_keys_maps ] = { $keys_spawn_offset_x };
+int keys_spawn_offset_y[ $number_keys_maps ] = { $keys_spawn_offset_y };
+
+int spawns[ $number_maps ] = { $spawns };
+int spawns_offset_x[ $number_maps ] = { $spawns_offset_x };
+int spawns_offset_y[ $number_maps ] = { $spawns_offset_y };
+int spawns_angle[ $number_maps ] = { $spawns_angle };
+
+str texturesToRandomize[246] = $textures
+
+function str GetRandomTexture(void)
+{
+		return texturesToRandomize[Random(0, 245)];
+}
+
+function void RandomTextures(void)
+{
+	ReplaceTextures("CEIL5_2", GetRandomTexture());
+    ReplaceTextures("CEIL5_1", GetRandomTexture());
+    ReplaceTextures("STONE2", GetRandomTexture());
+    Light_ChangeToValue(0, Random(150, 255));
+}
+
+function void SpawnKeyRandom(void)
+{
+    TARGET_ID_END = TARGET_ID_START;
+        while(IsTIDUsed(TARGET_ID_END + 1))
+        {
+            TARGET_ID_END += 1;
+        }
+
+    SPAWN_LOC_ID = random(TARGET_ID_START, TARGET_ID_END);
+
+    Spawn("RedCard", GetActorX(SPAWN_LOC_ID) + random(-offset, offset), GetActorY(SPAWN_LOC_ID) + random(-offset, offset),0.0,target_id,128);
+    SetThingSpecial(target_id, ACS_ExecuteAlways, 5);
+}
+
+function void SpawnKey(int i)
+{
+    TARGET_ID_END = TARGET_ID_START;
+    while(IsTIDUsed(TARGET_ID_END + 1))
+    {
+        TARGET_ID_END += 1;
+    }
+
+    int TARGET_ID_START_float = TARGET_ID_START << 16;
+    int TARGET_ID_END_float = TARGET_ID_END << 16;
+
+    int SPAWN_LOC_ID_float = FixedMul (keys_spawn[i], (TARGET_ID_END_float - TARGET_ID_START_float)) +  TARGET_ID_START_float;
+    SPAWN_LOC_ID = SPAWN_LOC_ID_float >> 16;
+
+    Spawn("RedCard", GetActorX(SPAWN_LOC_ID) + keys_spawn_offset_x[i], GetActorY(SPAWN_LOC_ID) + keys_spawn_offset_y[i], 0.0, target_id, 128);
+    SetThingSpecial(target_id, ACS_ExecuteAlways, 5);
+}
+
+script 1 OPEN
+{
+
+}
+
+script 2 ENTER
+{
+    map_level = GetLevelInfo (LEVELINFO_LEVELNUM);
+    if (random_keys)
+    {
+        for (int i=0; i<number_keys; i++)
+        {
+            SpawnKeyRandom();
+        }
+    }
+    else
+    {
+        for (int j= number_keys * map_level; j< (number_keys * (map_level + 1)); j++)
+        {
+            SpawnKey(j);
+        }
+    }
+    reward = 0.0;
+    reward_check = 0;
+
+	if (random_textures)
+    {
+        RandomTextures();
+    }
+    else
+    {
+        ReplaceTextures("CEIL5_2", floor_texture);
+        ReplaceTextures("CEIL5_1", ceilling_texture);
+        ReplaceTextures("STONE2", wall_texture);
+    }
+
+	if (random_spawn)
+    {
+
+        TARGET_ID_END = TARGET_ID_START;
+        while(IsTIDUsed(TARGET_ID_END + 1))
+        {
+            TARGET_ID_END += 1;
+        }
+
+        SPAWN_LOC_ID = random(TARGET_ID_START, TARGET_ID_END);
+
+        SetActorPosition(0, GetActorX(SPAWN_LOC_ID) + random(-offset, offset), GetActorY(SPAWN_LOC_ID) + random(-offset, offset), 0.0, 0);
+	    SetActorAngle(0,random(0.0,1.0));
+    }
+    else
+    {
+        TARGET_ID_END = TARGET_ID_START;
+        while(IsTIDUsed(TARGET_ID_END + 1))
+        {
+            TARGET_ID_END += 1;
+        }
+
+        int TARGET_ID_START_float = TARGET_ID_START << 16;
+        int TARGET_ID_END_float = TARGET_ID_END << 16;
+
+        int SPAWN_LOC_ID_float = FixedMul (spawns[map_level], (TARGET_ID_END_float - TARGET_ID_START_float)) +  TARGET_ID_START_float;
+        SPAWN_LOC_ID = SPAWN_LOC_ID_float >> 16;
+
+        SetActorPosition(0, GetActorX(SPAWN_LOC_ID) + spawns_offset_x[map_level], GetActorY(SPAWN_LOC_ID) + spawns_offset_y[map_level], 0.0, 0);
+	    SetActorAngle(0, spawns_angle[map_level]);
+    }
+}
+
+script 5 (void)
+{
+    reward = reward + 1.0;
+    reward_check = reward_check + 1;
+    if (reward_check == number_keys)
+    {
+        Exit_Normal(0);
+		restart;
+    }
+}
