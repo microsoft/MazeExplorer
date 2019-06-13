@@ -15,7 +15,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="mazeexplorer",
-    version="1.0.0",
+    version="1.0.1",
     author="Luke Harries, Sebastian Lee, Jaroslaw Rzepecki, Katya Hofmann, Sam Devlin",
     author_email="sam.devlin@microsoft.com",
     description="Customisable 3D benchmark for assessing generalisation in Reinforcement Learning.",
@@ -23,6 +23,7 @@ setuptools.setup(
     long_description_content_type="text/markdown",
     url="https://github.com/pypa/sampleproject",
     packages=setuptools.find_packages(),
+    package_data={'mazeexplorer': ['content/*', 'acc/*']},
     classifiers=[
         "Programming Language :: Python :: 3",
         "License :: OSI Approved :: MIT License",
