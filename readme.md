@@ -10,7 +10,7 @@ This repository contains the code for the MazeExplorer Gym Environment along wit
 By Luke Harries*, Sebastian Lee*, Jaroslaw Rzepecki, Katja Hofmann, and Sam Devlin.  
 \* Joint first author
 
-![Default textures](assets/default_textures.png) ![Random Textures](assets/textures-1.png) ![Random Textures](assets/textures-2.png) 
+![Default textures](https://github.com/microsoft/MazeExplorer/raw/master/assets/default_textures.png) ![Random Textures](https://github.com/microsoft/MazeExplorer/raw/master/assets/textures-1.png) ![Random Textures](https://github.com/microsoft/MazeExplorer/raw/master/assets/textures-2.png) 
 
 # The Mission
 
