@@ -36,6 +36,7 @@ The following features of the environment can be configured:
 - Actions space
 - Specific textures (Wall,
 ceiling, floor)
+- Data Augmentation
 
 # Example Usage
 
