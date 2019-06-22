@@ -2,6 +2,8 @@
 
 MazeExplorer is a customisable 3D benchmark for assessing generalisation in Reinforcement Learning.
 
+Simply put, MazeExplorer makes it easy to create separate training and test environments for your agents.
+
 It is based on the 3D first-person game [Doom](https://en.wikipedia.org/wiki/Doom_(1993_video_game)) and the open-source
 environment [VizDoom](https://github.com/mwydmuch/ViZDoom).
 
