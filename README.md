@@ -21,6 +21,7 @@ The goal is to navigate a procedurally generated maze and collect a set number o
 The environment is highly customisable, allowing you to create different training and test environments.
 
 The following features of the environment can be configured:
+- Unique or repeated maps
 - Number of maps
 - Map Size (X, Y)
 - Maze complexity
