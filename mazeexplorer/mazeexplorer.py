@@ -4,7 +4,10 @@
 import datetime
 import os
 import shutil
+import tempfile
 from pathlib import Path
+
+import numpy as np
 
 import cv2
 
@@ -18,7 +21,7 @@ dir_path = os.path.dirname(os.path.realpath(__file__))
 
 
 class MazeExplorer(VizDoom):
-    def __init__(self, number_maps=1, keys=9, size=(10, 10), random_spawn=False, random_textures=False,
+    def __init__(self, unique_maps=False, number_maps=1, keys=9, size=(10, 10), random_spawn=False, random_textures=False,
                  random_key_positions=False, seed=None, clip=(-1, 1),
                  floor_texture="CEIL5_2", ceilling_texture="CEIL5_1", wall_texture="STONE2",
                  action_frame_repeat=4, actions="MOVE_FORWARD TURN_LEFT TURN_RIGHT", scaled_resolution=(42, 42),
@@ -28,7 +31,8 @@ class MazeExplorer(VizDoom):
 
         MazeExplorer is a customisable 3D benchmark for assessing generalisation in Reinforcement Learning.
 
-        :param number_maps: number of maps which are contained within the cfg file
+        :params unique_maps: if set, every map will only be seen once. cfg files will be recreated after all its maps have been seen.
+        :param number_maps: number of maps which are contained within the cfg file. If unique maps is set, this acts like a cache of maps
         :param keys: number of keys which need to be collected for each episode
         :param size: the size of generated mazes in the format (width, height)
         :param random_spawn: whether to randomise the spawn each time the environment is reset
@@ -52,6 +56,7 @@ class MazeExplorer(VizDoom):
             (adding randomly colored, randomly sized boxes to observation)
         :type mazes_path: path to where to save the mazes
         """
+        self.unique_maps = unique_maps
         self.number_maps = number_maps
         self.keys = keys
         self.size = size
@@ -74,18 +79,15 @@ class MazeExplorer(VizDoom):
         self.floor_texture = floor_texture
         self.ceilling_texture = ceilling_texture
 
-        # Make directory to store the mazes in
-        self.timestamp = str(datetime.datetime.now()).replace(" ", "--").replace(".", "--").replace(":", "-")
-
-        if mazes_path is None:
-            self.mazes_path = os.path.join("mazes", self.timestamp)
-        else:
-            self.mazes_path = os.path.join(mazes_path, self.timestamp)
-
-        os.makedirs(self.mazes_path)
+        self.mazes_path = mazes_path if mazes_path is not None else tempfile.mkdtemp()
+        # create new maps and corresponding config
+        shutil.rmtree(self.mazes_path, ignore_errors=True)
+        os.mkdir(self.mazes_path)
 
         self.cfg_path = self.generate_mazes()
 
+        # start map with -1 since it will always be reseted one time.
+        self.current_map = -1
         super().__init__(self.cfg_path, number_maps=self.number_maps, scaled_resolution=self.scaled_resolution,
                          action_frame_repeat=self.action_frame_repeat, seed=seed,
                          data_augmentation=self.data_augmentation)
@@ -126,6 +128,46 @@ class MazeExplorer(VizDoom):
                            self.actions, episode_timeout=self.episode_timeout)
 
         return cfg
+
+    def reset(self):
+        """Resets environment to start a new mission.
+
+        If `unique_maps` is set and and all cached maps have been seen, it wil also generate
+        new maps using the ACC script. Otherwise if there is more than one maze 
+        it will randomly select a new maze for the list.
+
+        :return: initial observation of the environment as an rgb array in the format (rows, columns, channels) """
+        if not self.unique_maps:
+            super().reset()
+        else:
+            self.current_map += 1
+            if self.current_map > self.number_maps:
+                print("Generating new maps")
+
+                if self.seed is not None:
+                    np.random.seed(self.seed)
+
+                self.seed = np.random.randint(np.iinfo(np.int32).max)
+
+                # create new maps and corresponding config
+                shutil.rmtree(self.mazes_path)
+
+                os.mkdir(self.mazes_path)
+                self.cfg_path = self.generate_mazes()
+
+                # reset the underlying DoomGame class
+                self.env.load_config(self.cfg_path)
+                self.env.init()
+                self.current_map = 0
+
+            self.doom_map = "map" + str(self.current_map).zfill(2)
+            self.env.set_doom_map(self.doom_map)
+            self.env.new_episode()
+            self._rgb_array = self.env.get_state().screen_buffer
+            observation = self._process_image()
+            return observation
+            
+
 
     def save(self, destination_dir):
         """
@@ -194,3 +236,4 @@ class MazeExplorer(VizDoom):
 
         cv2.destroyAllWindows()
         video.release()
+
