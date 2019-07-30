@@ -15,7 +15,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="mazeexplorer",
-    version="1.0.4",
+    version="1.0.5",
     author="Luke Harries, Sebastian Lee, Jaroslaw Rzepecki, Katya Hofmann, Sam Devlin",
     author_email="sam.devlin@microsoft.com",
     description="Customisable 3D benchmark for assessing generalisation in Reinforcement Learning.",

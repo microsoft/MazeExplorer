@@ -138,7 +138,7 @@ class MazeExplorer(VizDoom):
 
         :return: initial observation of the environment as an rgb array in the format (rows, columns, channels) """
         if not self.unique_maps:
-            super().reset()
+            return super().reset()
         else:
             self.current_map += 1
             if self.current_map > self.number_maps:
