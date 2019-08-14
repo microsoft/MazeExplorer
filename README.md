@@ -7,7 +7,7 @@ Simply put, MazeExplorer makes it easy to create separate training and test envi
 It is based on the 3D first-person game [Doom](https://en.wikipedia.org/wiki/Doom_(1993_video_game)) and the open-source
 environment [VizDoom](https://github.com/mwydmuch/ViZDoom).
 
-This repository contains the code for the MazeExplorer Gym Environment along with the scripts to generate baseline results.
+This repository contains the code for the MazeExplorer Gym Environment along with the scripts to generate baseline results. The paper can be found [here](http://ieee-cog.org/papers/paper_210.pdf).
 
 By Luke Harries*, Sebastian Lee*, Jaroslaw Rzepecki, Katja Hofmann, and Sam Devlin.  
 \* Joint first author
@@ -47,16 +47,16 @@ ceiling, floor)
 from mazeexplorer import MazeExplorer
 
 train_env = MazeExplorer(number_maps=1,
-              size=(15, 15),
-              random_spawn=True,
-              random_textures=False,
-              keys=6)
+                         size=(15, 15),
+                         random_spawn=True,
+                         random_textures=False,
+                         keys=6)
               
 test_env = MazeExplorer(number_maps=1,
-              size=(15, 15),
-              random_spawn=True,
-              random_textures=False,
-              keys=6)
+                        size=(15, 15),
+                        random_spawn=True,
+                        random_textures=False,
+                        keys=6)
 
 # training
 for _ in range(1000):
@@ -84,6 +84,14 @@ for _ in range(1000):
 # Baseline experiments
 
 The information to reproduce the baseline experiments is shown in `baseline_experiments/experiments.md`.
+
+# Citation
+
+If you use this environment please cite the following:
+
+```
+@article{harrieslee2019, title={MazeExplorer: A Customisable 3D Benchmark for Assessing Generalisation in Reinforcement Learning}, author={Harries*, Luke and Lee*, Sebastian and Rzepecki, Jaroslaw and Hofmann, Katja and Devlin, Sam}, journal={In Proc. IEEE Conference on Games}, year={2019} }
+```
 
 # Contributing
 
